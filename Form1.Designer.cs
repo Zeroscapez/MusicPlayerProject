@@ -28,12 +28,267 @@
         /// </summary>
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
+            musicPlayer = new AxWMPLib.AxWindowsMediaPlayer();
+            groupBox1 = new GroupBox();
+            volume_percent = new Label();
+            volume_label = new Label();
+            music_volume = new TrackBar();
+            track_list = new ListBox();
+            open_Button = new Button();
+            stop_Button = new Button();
+            pause_Button = new Button();
+            play_Button = new Button();
+            previous_Button = new Button();
+            progressBar = new ProgressBar();
+            music_art = new PictureBox();
+            label_trackStart = new Label();
+            label_trackEnd = new Label();
+            panel1 = new Panel();
+            ((System.ComponentModel.ISupportInitialize)musicPlayer).BeginInit();
+            groupBox1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)music_volume).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)music_art).BeginInit();
+            SuspendLayout();
+            // 
+            // musicPlayer
+            // 
+            musicPlayer.Dock = DockStyle.Top;
+            musicPlayer.Enabled = true;
+            musicPlayer.Location = new Point(0, 0);
+            musicPlayer.Name = "musicPlayer";
+            musicPlayer.OcxState = (AxHost.State)resources.GetObject("musicPlayer.OcxState");
+            musicPlayer.Size = new Size(1102, 55);
+            musicPlayer.TabIndex = 0;
+            musicPlayer.Visible = false;
+            musicPlayer.Enter += musicPlayer_Enter;
+            // 
+            // groupBox1
+            // 
+            groupBox1.BackColor = Color.Black;
+            groupBox1.Controls.Add(volume_percent);
+            groupBox1.Controls.Add(volume_label);
+            groupBox1.Controls.Add(music_volume);
+            groupBox1.Controls.Add(track_list);
+            groupBox1.Controls.Add(open_Button);
+            groupBox1.Controls.Add(stop_Button);
+            groupBox1.Controls.Add(pause_Button);
+            groupBox1.Controls.Add(play_Button);
+            groupBox1.Controls.Add(previous_Button);
+            groupBox1.Font = new Font("SamsungOneUI Medium Condensed", 11.25F, FontStyle.Bold);
+            groupBox1.ForeColor = Color.Blue;
+            groupBox1.Location = new Point(12, 61);
+            groupBox1.Name = "groupBox1";
+            groupBox1.Size = new Size(754, 283);
+            groupBox1.TabIndex = 1;
+            groupBox1.TabStop = false;
+            groupBox1.Text = "Controls";
+            groupBox1.Enter += groupBox1_Enter;
+            // 
+            // volume_percent
+            // 
+            volume_percent.AutoSize = true;
+            volume_percent.Location = new Point(705, 57);
+            volume_percent.Name = "volume_percent";
+            volume_percent.Size = new Size(47, 21);
+            volume_percent.TabIndex = 4;
+            volume_percent.Text = "100%";
+            // 
+            // volume_label
+            // 
+            volume_label.AutoSize = true;
+            volume_label.Location = new Point(709, 252);
+            volume_label.Name = "volume_label";
+            volume_label.Size = new Size(36, 21);
+            volume_label.TabIndex = 4;
+            volume_label.Text = "VOL";
+            volume_label.Click += label1_Click_1;
+            // 
+            // music_volume
+            // 
+            music_volume.Location = new Point(707, 81);
+            music_volume.Maximum = 100;
+            music_volume.Name = "music_volume";
+            music_volume.Orientation = Orientation.Vertical;
+            music_volume.Size = new Size(45, 170);
+            music_volume.TabIndex = 6;
+            music_volume.TickFrequency = 0;
+            music_volume.TickStyle = TickStyle.Both;
+            music_volume.Scroll += trackBar1_Scroll;
+            // 
+            // track_list
+            // 
+            track_list.BackColor = Color.DarkGray;
+            track_list.Font = new Font("SamsungOneUI Medium Condensed", 11.25F, FontStyle.Bold);
+            track_list.FormattingEnabled = true;
+            track_list.Location = new Point(6, 62);
+            track_list.Name = "track_list";
+            track_list.Size = new Size(695, 214);
+            track_list.TabIndex = 5;
+            // 
+            // open_Button
+            // 
+            open_Button.BackColor = Color.Black;
+            open_Button.FlatAppearance.BorderColor = Color.Blue;
+            open_Button.FlatStyle = FlatStyle.Flat;
+            open_Button.Font = new Font("SamsungOneUI Medium Condensed", 11.25F, FontStyle.Bold);
+            open_Button.ForeColor = Color.Blue;
+            open_Button.Location = new Point(534, 21);
+            open_Button.Name = "open_Button";
+            open_Button.Size = new Size(126, 30);
+            open_Button.TabIndex = 4;
+            open_Button.Text = "Open";
+            open_Button.UseVisualStyleBackColor = false;
+            open_Button.Click += open_Button_Click;
+            // 
+            // stop_Button
+            // 
+            stop_Button.BackColor = Color.Black;
+            stop_Button.FlatAppearance.BorderColor = Color.Blue;
+            stop_Button.FlatStyle = FlatStyle.Flat;
+            stop_Button.Font = new Font("SamsungOneUI Medium Condensed", 11.25F, FontStyle.Bold);
+            stop_Button.ForeColor = Color.Blue;
+            stop_Button.Location = new Point(402, 21);
+            stop_Button.Name = "stop_Button";
+            stop_Button.Size = new Size(126, 30);
+            stop_Button.TabIndex = 3;
+            stop_Button.Text = "Stop";
+            stop_Button.UseVisualStyleBackColor = false;
+            // 
+            // pause_Button
+            // 
+            pause_Button.BackColor = Color.Black;
+            pause_Button.FlatAppearance.BorderColor = Color.Blue;
+            pause_Button.FlatStyle = FlatStyle.Flat;
+            pause_Button.Font = new Font("SamsungOneUI Medium Condensed", 11.25F, FontStyle.Bold);
+            pause_Button.ForeColor = Color.Blue;
+            pause_Button.Location = new Point(270, 21);
+            pause_Button.Name = "pause_Button";
+            pause_Button.Size = new Size(126, 30);
+            pause_Button.TabIndex = 2;
+            pause_Button.Text = "Pause";
+            pause_Button.UseVisualStyleBackColor = false;
+            // 
+            // play_Button
+            // 
+            play_Button.BackColor = Color.Black;
+            play_Button.FlatAppearance.BorderColor = Color.Blue;
+            play_Button.FlatStyle = FlatStyle.Flat;
+            play_Button.Font = new Font("SamsungOneUI Medium Condensed", 11.25F, FontStyle.Bold);
+            play_Button.ForeColor = Color.Blue;
+            play_Button.Location = new Point(138, 21);
+            play_Button.Name = "play_Button";
+            play_Button.Size = new Size(126, 30);
+            play_Button.TabIndex = 1;
+            play_Button.Text = "Play";
+            play_Button.UseVisualStyleBackColor = false;
+            // 
+            // previous_Button
+            // 
+            previous_Button.BackColor = Color.Black;
+            previous_Button.FlatAppearance.BorderColor = Color.Blue;
+            previous_Button.FlatStyle = FlatStyle.Flat;
+            previous_Button.Font = new Font("SamsungOneUI Medium Condensed", 11.25F, FontStyle.Bold);
+            previous_Button.ForeColor = Color.Blue;
+            previous_Button.Location = new Point(6, 21);
+            previous_Button.Name = "previous_Button";
+            previous_Button.Size = new Size(126, 30);
+            previous_Button.TabIndex = 0;
+            previous_Button.Text = "Previous";
+            previous_Button.UseVisualStyleBackColor = false;
+            // 
+            // progressBar
+            // 
+            progressBar.Location = new Point(18, 350);
+            progressBar.Name = "progressBar";
+            progressBar.Size = new Size(1050, 18);
+            progressBar.TabIndex = 2;
+            // 
+            // music_art
+            // 
+            music_art.BackColor = Color.Black;
+            music_art.BackgroundImageLayout = ImageLayout.None;
+            music_art.Image = Properties.Resources._09;
+            music_art.Location = new Point(772, 61);
+            music_art.Name = "music_art";
+            music_art.Size = new Size(320, 283);
+            music_art.SizeMode = PictureBoxSizeMode.Zoom;
+            music_art.TabIndex = 3;
+            music_art.TabStop = false;
+            music_art.Click += pictureBox1_Click;
+            // 
+            // label_trackStart
+            // 
+            label_trackStart.AutoSize = true;
+            label_trackStart.Font = new Font("SamsungOneUILatin 700", 24F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label_trackStart.ForeColor = Color.Blue;
+            label_trackStart.Location = new Point(12, 375);
+            label_trackStart.Name = "label_trackStart";
+            label_trackStart.Size = new Size(100, 43);
+            label_trackStart.TabIndex = 4;
+            label_trackStart.Text = "00:00";
+            label_trackStart.Click += label1_Click_3;
+            // 
+            // label_trackEnd
+            // 
+            label_trackEnd.AutoSize = true;
+            label_trackEnd.Font = new Font("SamsungOneUILatin 700", 24F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label_trackEnd.ForeColor = Color.Blue;
+            label_trackEnd.Location = new Point(968, 375);
+            label_trackEnd.Name = "label_trackEnd";
+            label_trackEnd.Size = new Size(100, 43);
+            label_trackEnd.TabIndex = 5;
+            label_trackEnd.Text = "00:00";
+            // 
+            // panel1
+            // 
+            panel1.BackColor = Color.FromArgb(0, 0, 192);
+            panel1.Location = new Point(2, 51);
+            panel1.Name = "panel1";
+            panel1.Size = new Size(1103, 321);
+            panel1.TabIndex = 6;
+            // 
+            // Form1
+            // 
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
-            Text = "Form1";
+            BackColor = Color.Black;
+            ClientSize = new Size(1102, 427);
+            Controls.Add(label_trackEnd);
+            Controls.Add(label_trackStart);
+            Controls.Add(music_art);
+            Controls.Add(progressBar);
+            Controls.Add(groupBox1);
+            Controls.Add(musicPlayer);
+            Controls.Add(panel1);
+            Name = "Form1";
+            Text = "C# Music Player";
+            ((System.ComponentModel.ISupportInitialize)musicPlayer).EndInit();
+            groupBox1.ResumeLayout(false);
+            groupBox1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)music_volume).EndInit();
+            ((System.ComponentModel.ISupportInitialize)music_art).EndInit();
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
+
+        private AxWMPLib.AxWindowsMediaPlayer musicPlayer;
+        private GroupBox groupBox1;
+        private Button previous_Button;
+        private ListBox track_list;
+        private Button open_Button;
+        private Button stop_Button;
+        private Button pause_Button;
+        private Button play_Button;
+        private TrackBar music_volume;
+        private ProgressBar progressBar;
+        private PictureBox music_art;
+        private Label volume_label;
+        private Label volume_percent;
+        private Label label_trackStart;
+        private Label label_trackEnd;
+        private Panel panel1;
     }
 }
