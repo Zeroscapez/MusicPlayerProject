@@ -9,7 +9,10 @@ namespace MusicPlayer
             volume_percent.Text = music_volume.Value.ToString() + "%";
         }
 
-        string[] paths, files;
+
+
+        List<string> paths = new();
+        List<string> files = new();
 
         private void label1_Click(object sender, EventArgs e)
         {
@@ -53,26 +56,67 @@ namespace MusicPlayer
         {
             OpenFileDialog dialog = new OpenFileDialog();
             dialog.Multiselect = true;
+
+            
             if (dialog.ShowDialog() == DialogResult.OK)
             {
-                paths = dialog.FileNames;
-                files = dialog.SafeFileNames;
-                for (int i = 0; i < files.Length; i++)
+                //Paths and files are generated as files are added
+                var newPaths = dialog.FileNames;
+                var newFiles = dialog.SafeFileNames;
+
+               
+                //Append files to the end of the current list
+                for (int i = 0; i < newPaths.Length; i++)
                 {
-                    track_list.Items.Add(files[i]);
+                    paths.Add(newPaths[i]);
+                    files.Add(newFiles[i]);
+                    track_list.Items.Add(newFiles[i]);
                 }
             }
         }
 
         private void track_list_SelectedIndexChanged(object sender, EventArgs e)
         {
-            musicPlayer.URL = paths[track_list.SelectedIndex];
+            int idx = track_list.SelectedIndex;
+            if(idx < 0 || idx >= paths.Count)
+            {
+                return; // Invalid index, do nothing
+            }
+
+            musicPlayer.URL = paths[idx];
             musicPlayer.Ctlcontrols.play();
+
+            try
+            {
+                var file = TagLib.File.Create(paths[track_list.SelectedIndex]);
+                var pic = file.Tag.Pictures?.FirstOrDefault();
+                if (pic != null)
+                {
+                    var bin = (byte[])pic.Data.Data;
+                    using var ms = new MemoryStream(bin);
+                    //Replace image when the data for it exists, otherwise set it to null
+                    music_art.Image = Image.FromStream(ms);
+                }else
+                {
+                    //if imagine does not exist
+                    music_art.Image = Properties.Resources._09;
+                }
+
+            }
+            catch
+            {
+                //If there's an error reading the file or its metadata, set the image to a default one
+                music_art.Image = Properties.Resources._09;
+            }
+
+
         }
 
         private void stop_Button_Click(object sender, EventArgs e)
         {
             musicPlayer.Ctlcontrols.stop();
+            progressBar.Value = 0;
+            music_art.Image = null;
         }
 
         private void pause_Button_Click(object sender, EventArgs e)
@@ -149,7 +193,11 @@ namespace MusicPlayer
 
         private void progressBar_MouseDown(object sender, MouseEventArgs e)
         {
-            musicPlayer.Ctlcontrols.currentPosition = (double)e.X / progressBar.Width * musicPlayer.currentMedia.duration;
+            if(musicPlayer.playState == WMPLib.WMPPlayState.wmppsPlaying)
+            {
+                musicPlayer.Ctlcontrols.currentPosition = (double)e.X / progressBar.Width * musicPlayer.currentMedia.duration;
+            }
+          
         }
     }
 }
