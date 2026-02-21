@@ -29,6 +29,7 @@ jobs:
       - name: Publish
         run: |
           msbuild ./MusicPlayer.csproj `
+            /p:targetFramework=net8.0-windows `
             /p:Configuration=Release `
             /p:RuntimeIdentifier=win-x64 `
             /p:SelfContained=true `
