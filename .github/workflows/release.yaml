@@ -1,37 +1,51 @@
-name: Build Portable WinForms Release
+name: Build Portable WinForms (.NET 8)
 
 on:
-  workflow_dispatch:
   push:
-    branches: master
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout
+    # 1️⃣ Checkout repository
+    - name: Checkout code
       uses: actions/checkout@v4
 
+    # 2️⃣ Setup MSBuild for COM references
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
 
+    # 3️⃣ Setup .NET 8 SDK
     - name: Setup .NET 8
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
-       
 
-    - name: Restore
-      run: dotnet restore
+    # 4️⃣ Restore packages with runtime
+    - name: Restore packages
+      run: dotnet restore MusicPlayer.csproj --runtime win-x64
 
-    - name: Build with MSBuild (NOT dotnet build)
+    # 5️⃣ Build and publish using full MSBuild
+    - name: Publish portable WinForms
+      shell: pwsh
       run: |
-        msbuild MusicPlayer.csproj `
+        & "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe" `
+          MusicPlayer.csproj `
           /p:Configuration=Release `
-        /p:RuntimeIdentifier=win-x64 `
-        /p:SelfContained=true `
-        /p:PublishSingleFile=true `
-        /p:IncludeNativeLibrariesForSelfExtract=true `
-        /p:PublishTrimmed=false `
-        /t:Publish
+          /p:RuntimeIdentifier=win-x64 `
+          /p:SelfContained=true `
+          /p:PublishSingleFile=true `
+          /p:IncludeNativeLibrariesForSelfExtract=true `
+          /p:PublishTrimmed=false `
+          /t:Publish
+
+    # 6️⃣ Upload artifact
+    - name: Upload portable EXE artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: portable-win-x64
+        path: |
+          **/bin/Release/net8.0-windows/win-x64/publish/*
