@@ -85,12 +85,11 @@ namespace MusicPlayer
         {
             if (index < 0 || index >= paths.Count) return;
 
-            StopPlayback();
+            StopPlayback(); // Stop current playback
 
             currentIndex = index;
 
             audioFile = new AudioFileReader(paths[index]);
-
             audioFile.Volume = music_volume.Value / 100f;
 
             outputDevice = new WaveOutEvent();
@@ -141,18 +140,20 @@ namespace MusicPlayer
         {
             if (audioFile == null) return;
 
-            // Check if playback reached end naturally
-            bool reachedEnd = audioFile.Position >= audioFile.Length;
+            // Check if song reached the end (allow a tiny tolerance)
+            bool reachedEnd = audioFile.Position >= audioFile.Length - 500; // 500 bytes tolerance
 
             if (reachedEnd)
             {
+                // If there is a next track, play it
                 if (currentIndex + 1 < paths.Count)
                 {
                     PlayTrack(currentIndex + 1);
                 }
                 else
                 {
-                    // Last track finished — just clean up
+                    // No more tracks, stop playback and reset index
+                    currentIndex = -1;
                     StopPlayback();
                 }
             }
