@@ -2,7 +2,7 @@ name: Build Portable WinForms (.NET 8)
 
 on:
   push:
-    branches: [ main ]
+    branches: master
   workflow_dispatch:
 
 jobs:
