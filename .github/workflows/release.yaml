@@ -39,14 +39,20 @@ jobs:
           -p:IncludeNativeLibrariesForSelfExtract=true `
           -p:PublishTrimmed=false `
           -o bin/Release/net10.0-windows/win-x64/publish
+
+
     - name: Extract version from .csproj
       id: extract_version
       run: |
-        $csprojPath = "MusicPlayer.csproj"
-        [xml]$csproj = Get-Content $csprojPath
+        [xml]$csproj = Get-Content "MusicPlayer.csproj"
         $version = $csproj.Project.PropertyGroup.Version
+        if (-not $version) {
+          Write-Error "No <Version> found in csproj!"
+          exit 1
+        }
         $tag = "v$version"
         echo "TAG_NAME=$tag" >> $env:GITHUB_OUTPUT
+
     #Create Git tag for release
     - name: Create Git tag
       id: tagger
@@ -60,16 +66,20 @@ jobs:
     - name: Create release.zip
       shell: pwsh
       run: |
+        $tag = "${{ steps.version.outputs.TAG_NAME }}"
         $publishPath = "bin/Release/net10.0-windows/win-x64/publish"
-        Compress-Archive -Path "$publishPath/*" -DestinationPath "release-${{ steps.tagger.outputs.TAG_NAME }}.zip" -Force
+        $zipName = "MusicPlayer-$tag.zip"
+        Compress-Archive -Path "$publishPath/*" -DestinationPath $zipName -Force
+        echo "ZIP_NAME=$zipName" >> $env:GITHUB_OUTPUT
+      id: zip
 
     # Create GitHub Release
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: release-${{ steps.tagger.outputs.TAG_NAME }}
-        name: release-${{ steps.tagger.outputs.TAG_NAME }}
-        files: release-${{ steps.tagger.outputs.TAG_NAME }}.zip
+        tag_name: ${{ steps.extract_version.outputs.TAG_NAME }}
+        name: ${{ steps.extract_version.outputs.TAG_NAME }}
+        files: MusicPlayer-${{ steps.extract_version.outputs.TAG_NAME }}.zip
         draft: false
         prerelease: false
       env:
