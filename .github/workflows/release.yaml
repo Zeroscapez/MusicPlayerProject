@@ -28,7 +28,7 @@ jobs:
 
       - name: Publish Portable Build
         run: |
-          dotnet publish ./MusicPlayerProject/MusicPlayerProject.csproj `
+          dotnet publish ./MusicPlayerProject/MusicPlayer.csproj `
           -c Release `
             -r win-x64 `
             --self-contained true `
