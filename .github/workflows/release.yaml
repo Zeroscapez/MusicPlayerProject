@@ -1,48 +1,43 @@
-name: Build and Release WinForms App
+name: Build Portable WinForms Release
 
 on:
   push:
     branches:
-      - master # Trigger on push to main branch
+      - master
     tags:
-      - 'v*' # Trigger on tags starting with 'v'
-
-permissions:
-  contents: write   # Required to create releases
+      - 'v*'
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
 
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 8.0.x
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+        
 
-      - uses: microsoft/setup-msbuild@v2
+    - name: Restore
+      run: dotnet restore
 
-      - name: Restore
-        run: dotnet restore
+    - name: Publish Portable
+      run: |
+        dotnet publish YourProject.csproj `
+          -c Release `
+          -r win-x64 `
+          --self-contained true `
+          /p:PublishSingleFile=true `
+          /p:IncludeNativeLibrariesForSelfExtract=true `
+          /p:PublishTrimmed=false
 
-      - name: Publish
-        run: |
-          msbuild ./MusicPlayer.csproj `
-            /p:targetFramework=net8.0-windows `
-            /p:Configuration=Release `
-            /p:RuntimeIdentifier=win-x64 `
-            /p:SelfContained=true `
-            /p:PublishSingleFile=true `
-            /p:IncludeNativeLibrariesForSelfExtract=true `
-            /p:PublishDir=publish\
-
-      - name: Zip
-        run: Compress-Archive -Path publish\* -DestinationPath MusicPlayer-${{ github.ref_name }}.zip
-
-      - name: Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: MusicPlayer-${{ github.ref_name }}.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Upload Portable EXE
+      uses: actions/upload-artifact@v4
+      with:
+        name: portable-win-x64
+        path: |
+          **/bin/Release/net10.0-windows/win-x64/publish/*
