@@ -1,214 +1,212 @@
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Windows.Forms;
+using NAudio.Wave;
+using TagLib;
+
+
 namespace MusicPlayer
 {
     public partial class Form1 : Form
     {
+        private WaveOutEvent outputDevice;
+        private AudioFileReader audioFile;
+
+        // Playlist
+        private List<string> paths = new();
+        private List<string> files = new();
+        private int currentIndex = -1;
         public Form1()
         {
             InitializeComponent();
             music_volume.Value = 50; // Set default volume to 50%
             volume_percent.Text = music_volume.Value.ToString() + "%";
+
+            // owner-draw so long text doesn't wrap
+            track_list.HorizontalScrollbar = true;
+            track_list.DrawMode = DrawMode.OwnerDrawFixed;
+            track_list.DrawItem += track_list_DrawItem;
+
+            // Timer for progress bar
+            timer1.Interval = 500;
+            timer1.Tick += timer1_Tick;
+            timer1.Start();
         }
 
 
 
-        List<string> paths = new();
-        List<string> files = new();
+     
+        private void label1_Click(object sender, EventArgs e) { }
 
-        private void label1_Click(object sender, EventArgs e)
-        {
+        private void groupBox1_Enter(object sender, EventArgs e) { }
 
-        }
+        private void pictureBox1_Click(object sender, EventArgs e) { }
 
-        private void groupBox1_Enter(object sender, EventArgs e)
-        {
+        private void musicPlayer_Enter(object sender, EventArgs e) { }
 
-        }
+        private void label1_Click_1(object sender, EventArgs e) { }
 
-        private void pictureBox1_Click(object sender, EventArgs e)
-        {
+        private void label1_Click_2(object sender, EventArgs e) { }
 
-        }
-
-
-        private void musicPlayer_Enter(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label1_Click_1(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label1_Click_2(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label1_Click_3(object sender, EventArgs e)
-        {
-
-        }
+        private void label1_Click_3(object sender, EventArgs e) { }
 
 
 
+        #region File Handling
         private void open_Button_Click(object sender, EventArgs e)
         {
-            OpenFileDialog dialog = new OpenFileDialog();
-            dialog.Multiselect = true;
-
-
-            if (dialog.ShowDialog() == DialogResult.OK)
+            OpenFileDialog dialog = new OpenFileDialog
             {
-                //Paths and files are generated as files are added
-                var newPaths = dialog.FileNames;
-                var newFiles = dialog.SafeFileNames;
+                Multiselect = true,
+                Filter = "Audio Files|*.mp3;*.wav;*.flac;*.aac"
+            };
 
+            if (dialog.ShowDialog() != DialogResult.OK) return;
 
-                //Append files to the end of the current list
-                for (int i = 0; i < newPaths.Length; i++)
-                {
-                    paths.Add(newPaths[i]);
-                    files.Add(newFiles[i]);
+          
+            foreach (var file in dialog.FileNames)
+            {
+                paths.Add(file);
+                files.Add(Path.GetFileName(file));
+                track_list.Items.Add(Path.GetFileNameWithoutExtension(file));
+            }
 
-                    //Show filesname without the extension at the end when shown in list
-                    var displayName = Path.GetFileNameWithoutExtension(newFiles[i]);
-                    track_list.Items.Add(displayName);
-                }
+            track_list.Invalidate();
+            
+        }
+        #endregion
 
-                track_list_DrawItem(track_list, new DrawItemEventArgs(track_list.CreateGraphics(), track_list.Font, track_list.ClientRectangle, 0, DrawItemState.Selected));
+        #region Playback Controls
+        private void PlayTrack(int index)
+        {
+            if (index < 0 || index >= paths.Count) return;
+
+            StopPlayback();
+
+            currentIndex = index;
+
+            audioFile = new AudioFileReader(paths[index]);
+
+            audioFile.Volume = music_volume.Value / 100f;
+
+            outputDevice = new WaveOutEvent();
+            outputDevice.Init(audioFile);
+            outputDevice.PlaybackStopped += OutputDevice_PlaybackStopped;
+            outputDevice.Play();
+
+            LoadAlbumArt(paths[index]);
+            track_list.SelectedIndex = index;
+        }
+
+        private void StopPlayback()
+        {
+            if (outputDevice != null)
+            {
+                outputDevice.PlaybackStopped -= OutputDevice_PlaybackStopped;
+                outputDevice.Stop();
+                outputDevice.Dispose();
+                outputDevice = null;
+            }
+
+            if (audioFile != null)
+            {
+                audioFile.Dispose();
+                audioFile = null;
+            }
+
+            progressBar.Value = 0;
+
+            if (music_art.Image != null)
+            {
+                music_art.Image.Dispose();
+                music_art.Image = null;
             }
         }
 
-        private void track_list_SelectedIndexChanged(object sender, EventArgs e)
+        private void PausePlayback()
         {
-            int idx = track_list.SelectedIndex;
-            if (idx < 0 || idx >= paths.Count)
-            {
-                return; // Invalid index, do nothing
-            }
+            outputDevice?.Pause();
+        }
 
-            musicPlayer.URL = paths[idx];
-            musicPlayer.Ctlcontrols.play();
+        private void ResumePlayback()
+        {
+            outputDevice?.Play();
+        }
 
-            try
+        private void OutputDevice_PlaybackStopped(object sender, StoppedEventArgs e)
+        {
+            if (audioFile == null) return;
+
+            // Check if playback reached end naturally
+            bool reachedEnd = audioFile.Position >= audioFile.Length;
+
+            if (reachedEnd)
             {
-                var file = TagLib.File.Create(paths[track_list.SelectedIndex]);
-                var pic = file.Tag.Pictures?.FirstOrDefault();
-                if (pic != null)
+                if (currentIndex + 1 < paths.Count)
                 {
-                    var bin = (byte[])pic.Data.Data;
-                    using var ms = new MemoryStream(bin);
-                    //Replace image when the data for it exists, otherwise set it to null
-                    music_art.Image = Image.FromStream(ms);
+                    PlayTrack(currentIndex + 1);
                 }
                 else
                 {
-                    //if imagine does not exist
-                    music_art.Image = Properties.Resources._09;
+                    // Last track finished — just clean up
+                    StopPlayback();
                 }
-
             }
-            catch
-            {
-                //If there's an error reading the file or its metadata, set the image to a default one
-                music_art.Image = Properties.Resources._09;
-            }
-
-
         }
+        #endregion
+      
 
-        private void stop_Button_Click(object sender, EventArgs e)
-        {
-            musicPlayer.Ctlcontrols.stop();
-            progressBar.Value = 0;
-            music_art.Image = null;
-        }
+        #region Buttons
+        private void play_Button_Click(object sender, EventArgs e) => ResumePlayback();
+        private void stop_Button_Click(object sender, EventArgs e) => StopPlayback();
+        private void pause_Button_Click(object sender, EventArgs e) => PausePlayback();
 
-        private void pause_Button_Click(object sender, EventArgs e)
+        private void next_button_Click(object sender, EventArgs e)
         {
-            musicPlayer.Ctlcontrols.pause();
-        }
-
-        private void play_Button_Click(object sender, EventArgs e)
-        {
-            musicPlayer.Ctlcontrols.play();
+            if (paths.Count == 0) return;
+            int nextIndex = (currentIndex + 1) % paths.Count;
+            PlayTrack(nextIndex);
         }
 
         private void previous_Button_Click(object sender, EventArgs e)
         {
-            if (track_list.Items.Count == 0)
-            {
-                return;
-            }
-            if (track_list.SelectedIndex > 0)
-            {
-                track_list.SelectedIndex = track_list.SelectedIndex - 1;
-            }
-            else
-            {
-                track_list.SelectedIndex = track_list.Items.Count - 1;
-            }
+            if (paths.Count == 0) return;
+            int prevIndex = (currentIndex - 1 + paths.Count) % paths.Count;
+            PlayTrack(prevIndex);
         }
 
-        private void next_button_Click(object sender, EventArgs e)
-        {
-            if (track_list.Items.Count == 0)
-            {
-                return;
-            }
-            if (track_list.SelectedIndex < track_list.Items.Count - 1)
-            {
-                track_list.SelectedIndex = track_list.SelectedIndex + 1;
-            }
-            else
-            {
-                track_list.SelectedIndex = 0;
-            }
-        }
+        #endregion
 
-        private void timer1_Tick(object sender, EventArgs e)
-        {
-            var ctl = musicPlayer?.Ctlcontrols;
-            if (ctl == null) return;
-
-            var item = ctl.currentItem;
-
-            if (musicPlayer?.playState == WMPLib.WMPPlayState.wmppsPlaying && item != null)
-            {
-                progressBar.Maximum = (int)item.duration;
-                progressBar.Value = (int)ctl.currentPosition;
-            }
-
-            // Safely update labels
-            label_trackStart.Text = ctl.currentPositionString ?? "00:00";
-            label_trackEnd.Text = item?.durationString ?? "00:00";
-        }
-
+        #region Volume Control
 
         private void trackBar1_Scroll(object sender, EventArgs e)
         {
-            musicPlayer.settings.volume = music_volume.Value;
-            volume_percent.Text = music_volume.Value.ToString() + "%";
-        }
-
-        private void label_trackEnd_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void progressBar_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (musicPlayer.playState == WMPLib.WMPPlayState.wmppsPlaying)
+            if(audioFile != null)
             {
-                musicPlayer.Ctlcontrols.currentPosition = (double)e.X / progressBar.Width * musicPlayer.currentMedia.duration;
+                audioFile.Volume = music_volume.Value / 100f;
             }
 
+            volume_percent.Text = music_volume.Value.ToString() + "%";
         }
+        #endregion
+
+        #region Playlist Selection
+        private void track_list_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (track_list.SelectedIndex != currentIndex)
+                PlayTrack(track_list.SelectedIndex);
+
+
+        }
+
 
         private void track_list_DrawItem(object sender, DrawItemEventArgs e)
         {
-            if(e.Index < 0) return;
+            if (e.Index < 0) return;
 
             e.DrawBackground();
 
@@ -221,8 +219,84 @@ namespace MusicPlayer
                 : track_list.ForeColor;
 
             TextRenderer.DrawText(e.Graphics, text, track_list.Font, rect, foreColor, flags);
-
             e.DrawFocusRectangle();
         }
+
+        #endregion
+
+
+        #region Progress Bar
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            if (audioFile == null) return;
+
+            progressBar.Maximum = (int)audioFile.TotalTime.TotalSeconds;
+            progressBar.Value= Math.Min((int)audioFile.CurrentTime.TotalSeconds, progressBar.Maximum);
+
+            label_trackStart.Text = audioFile.CurrentTime.ToString(@"mm\:ss");
+            label_trackEnd.Text = audioFile.TotalTime.ToString(@"mm\:ss");
+        }
+
+        private void progressBar_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (audioFile == null) return;
+
+            double ratio = (double)e.X / progressBar.Width;
+            audioFile.CurrentTime = TimeSpan.FromSeconds(audioFile.TotalTime.TotalSeconds * ratio);
+
+        }
+        #endregion
+
+        #region Album Art
+
+        private void LoadAlbumArt(string path)
+        {
+            try
+            {
+                var file = TagLib.File.Create(path);
+                var pic = file.Tag.Pictures.FirstOrDefault();
+
+                if (pic != null)
+                {
+                    using var ms = new MemoryStream(pic.Data.Data);
+                    if(music_art.Image != null)
+                    {
+                        music_art.Image.Dispose();
+                    }
+                    music_art.Image = Image.FromStream(ms);
+                }
+                else
+                {
+                    if(music_art.Image != null)
+                    {
+                        music_art.Image.Dispose();
+                    }
+                    music_art.Image = Properties.Resources._09;
+
+                }
+            }
+            catch
+            {
+                if(music_art.Image != null)
+                {
+                    music_art.Image.Dispose();
+                }
+                music_art.Image = Properties.Resources._09;
+
+            }
+        }
+
+        #endregion
+
+
+
+
+        private void label_trackEnd_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        
+
     }
 }
