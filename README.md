@@ -30,7 +30,6 @@ The application automatically advances through a playlist, supports seeking, and
 - ⏱ Real-time progress tracking  
 - 🎚 Volume control  
 - 🖱 Click-to-seek progress bar  
-- 📜 Owner-drawn playlist with ellipsis handling for long titles  
 
 ---
 
