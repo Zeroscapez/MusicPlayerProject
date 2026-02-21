@@ -12,7 +12,7 @@ updates:
     pull-request-branch-name:
       separator: "-"
     labels:
-      -"Dependencies"
+      - "Dependencies"
     reviewers:
       - "zeroscapez"
     target-branch: "dev"
