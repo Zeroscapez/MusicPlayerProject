@@ -27,11 +27,11 @@ jobs:
 
     - name: Build with MSBuild (NOT dotnet build)
       run: |
-        msbuild MusicPlayer.csproj ^
-          /p:Configuration=Release ^
-          /p:RuntimeIdentifier=win-x64 ^
-          /p:SelfContained=true ^
-          /p:PublishSingleFile=true ^
-          /p:IncludeNativeLibrariesForSelfExtract=true ^
-          /p:PublishTrimmed=false ^
-          /t:Publish
+        msbuild MusicPlayer.csproj `
+          /p:Configuration=Release `
+        /p:RuntimeIdentifier=win-x64 `
+        /p:SelfContained=true `
+        /p:PublishSingleFile=true `
+        /p:IncludeNativeLibrariesForSelfExtract=true `
+        /p:PublishTrimmed=false `
+        /t:Publish
