@@ -12,36 +12,36 @@ permissions:
 
 jobs:
   build:
-    runs-on: windows-latest   # IMPORTANT for WinForms
+    runs-on: windows-latest
 
     steps:
-      - name: Checkout Repository # Checkout the code
-        uses: actions/checkout@v4 # Checkout the repository
+      - uses: actions/checkout@v4
 
-      - name: Setup .NET 10 SDK # Setup .NET 10 SDK
-        uses: actions/setup-dotnet@v4 
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
 
-      - name: Restore Dependencies
+      - uses: microsoft/setup-msbuild@v2
+
+      - name: Restore
         run: dotnet restore
 
-      - name: Publish Portable Build
+      - name: Publish
         run: |
-          dotnet publish ./MusicPlayer.csproj `
-          -c Release `
-            -r win-x64 `
-            --self-contained true `
-            -p:PublishSingleFile=true `
-            -p:IncludeNativeLibrariesForSelfExtract=true `
-            -o publish
+          msbuild ./MusicPlayer.csproj `
+            /p:Configuration=Release `
+            /p:RuntimeIdentifier=win-x64 `
+            /p:SelfContained=true `
+            /p:PublishSingleFile=true `
+            /p:IncludeNativeLibrariesForSelfExtract=true `
+            /p:PublishDir=publish\
 
-      - name: Create ZIP
-        run: Compress-Archive -Path publish\* -DestinationPath MysticalMusicApp-${{ github.ref_name }}.zip
+      - name: Zip
+        run: Compress-Archive -Path publish\* -DestinationPath MusicPlayer-${{ github.ref_name }}.zip
 
-      - name: Create GitHub Release
+      - name: Release
         uses: softprops/action-gh-release@v2
         with:
-          files: MysticalMusicApp-${{ github.ref_name }}.zip
+          files: MusicPlayer-${{ github.ref_name }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
