@@ -84,7 +84,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ steps.version.outputs.TAG_NAME }}
-        name: ${{ steps.version.outputs.TAG_NAME }}
+        name: release-${{ steps.version.outputs.TAG_NAME }}
         files: MusicPlayer-${{ steps.version.outputs.TAG_NAME }}.zip
         draft: false
         prerelease: false
