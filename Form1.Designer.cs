@@ -144,6 +144,7 @@
             track_list.Name = "track_list";
             track_list.Size = new Size(695, 214);
             track_list.TabIndex = 5;
+            track_list.DrawItem += track_list_DrawItem;
             track_list.SelectedIndexChanged += track_list_SelectedIndexChanged;
             // 
             // open_Button

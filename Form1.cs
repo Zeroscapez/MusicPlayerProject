@@ -57,28 +57,33 @@ namespace MusicPlayer
             OpenFileDialog dialog = new OpenFileDialog();
             dialog.Multiselect = true;
 
-            
+
             if (dialog.ShowDialog() == DialogResult.OK)
             {
                 //Paths and files are generated as files are added
                 var newPaths = dialog.FileNames;
                 var newFiles = dialog.SafeFileNames;
 
-               
+
                 //Append files to the end of the current list
                 for (int i = 0; i < newPaths.Length; i++)
                 {
                     paths.Add(newPaths[i]);
                     files.Add(newFiles[i]);
-                    track_list.Items.Add(newFiles[i]);
+
+                    //Show filesname without the extension at the end when shown in list
+                    var displayName = Path.GetFileNameWithoutExtension(newFiles[i]);
+                    track_list.Items.Add(displayName);
                 }
+
+                track_list_DrawItem(track_list, new DrawItemEventArgs(track_list.CreateGraphics(), track_list.Font, track_list.ClientRectangle, 0, DrawItemState.Selected));
             }
         }
 
         private void track_list_SelectedIndexChanged(object sender, EventArgs e)
         {
             int idx = track_list.SelectedIndex;
-            if(idx < 0 || idx >= paths.Count)
+            if (idx < 0 || idx >= paths.Count)
             {
                 return; // Invalid index, do nothing
             }
@@ -96,7 +101,8 @@ namespace MusicPlayer
                     using var ms = new MemoryStream(bin);
                     //Replace image when the data for it exists, otherwise set it to null
                     music_art.Image = Image.FromStream(ms);
-                }else
+                }
+                else
                 {
                     //if imagine does not exist
                     music_art.Image = Properties.Resources._09;
@@ -168,7 +174,7 @@ namespace MusicPlayer
 
             var item = ctl.currentItem;
 
-            if (musicPlayer.playState == WMPLib.WMPPlayState.wmppsPlaying && item != null)
+            if (musicPlayer?.playState == WMPLib.WMPPlayState.wmppsPlaying && item != null)
             {
                 progressBar.Maximum = (int)item.duration;
                 progressBar.Value = (int)ctl.currentPosition;
@@ -193,11 +199,30 @@ namespace MusicPlayer
 
         private void progressBar_MouseDown(object sender, MouseEventArgs e)
         {
-            if(musicPlayer.playState == WMPLib.WMPPlayState.wmppsPlaying)
+            if (musicPlayer.playState == WMPLib.WMPPlayState.wmppsPlaying)
             {
                 musicPlayer.Ctlcontrols.currentPosition = (double)e.X / progressBar.Width * musicPlayer.currentMedia.duration;
             }
-          
+
+        }
+
+        private void track_list_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            if(e.Index < 0) return;
+
+            e.DrawBackground();
+
+            string text = track_list.Items[e.Index].ToString() ?? string.Empty;
+            var rect = e.Bounds;
+            var flags = TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.EndEllipsis;
+
+            Color foreColor = ((e.State & DrawItemState.Selected) == DrawItemState.Selected)
+                ? SystemColors.HighlightText
+                : track_list.ForeColor;
+
+            TextRenderer.DrawText(e.Graphics, text, track_list.Font, rect, foreColor, flags);
+
+            e.DrawFocusRectangle();
         }
     }
 }
