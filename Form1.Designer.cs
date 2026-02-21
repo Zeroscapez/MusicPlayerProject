@@ -29,8 +29,6 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-            musicPlayer = new AxWMPLib.AxWindowsMediaPlayer();
             groupBox1 = new GroupBox();
             next_button = new Button();
             volume_percent = new Label();
@@ -48,23 +46,10 @@
             label_trackEnd = new Label();
             panel1 = new Panel();
             timer1 = new System.Windows.Forms.Timer(components);
-            ((System.ComponentModel.ISupportInitialize)musicPlayer).BeginInit();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)music_volume).BeginInit();
             ((System.ComponentModel.ISupportInitialize)music_art).BeginInit();
             SuspendLayout();
-            // 
-            // musicPlayer
-            // 
-            musicPlayer.Dock = DockStyle.Top;
-            musicPlayer.Enabled = true;
-            musicPlayer.Location = new Point(0, 0);
-            musicPlayer.Name = "musicPlayer";
-            musicPlayer.OcxState = (AxHost.State)resources.GetObject("musicPlayer.OcxState");
-            musicPlayer.Size = new Size(1102, 55);
-            musicPlayer.TabIndex = 0;
-            musicPlayer.Visible = false;
-            musicPlayer.Enter += musicPlayer_Enter;
             // 
             // groupBox1
             // 
@@ -285,7 +270,6 @@
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.Black;
             ClientSize = new Size(1102, 427);
-            Controls.Add(musicPlayer);
             Controls.Add(label_trackEnd);
             Controls.Add(label_trackStart);
             Controls.Add(music_art);
@@ -294,7 +278,6 @@
             Controls.Add(panel1);
             Name = "Form1";
             Text = "C# Music Player";
-            ((System.ComponentModel.ISupportInitialize)musicPlayer).EndInit();
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)music_volume).EndInit();
@@ -304,8 +287,6 @@
         }
 
         #endregion
-
-        private AxWMPLib.AxWindowsMediaPlayer musicPlayer;
         private GroupBox groupBox1;
         private Button previous_Button;
         private ListBox track_list;
