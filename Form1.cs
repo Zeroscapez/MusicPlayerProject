@@ -7,48 +7,31 @@ namespace MusicPlayer
             InitializeComponent();
             music_volume.Value = 50; // Set default volume to 50%
             volume_percent.Text = music_volume.Value.ToString() + "%";
+
+            // owner-draw so long text doesn't wrap
+            track_list.HorizontalScrollbar = true;
+            track_list.DrawMode = DrawMode.OwnerDrawFixed;
+            track_list.DrawItem += track_list_DrawItem;
         }
 
 
 
         List<string> paths = new();
         List<string> files = new();
+        private void label1_Click(object sender, EventArgs e) { }
 
-        private void label1_Click(object sender, EventArgs e)
-        {
+        private void groupBox1_Enter(object sender, EventArgs e) { }
 
-        }
+        private void pictureBox1_Click(object sender, EventArgs e) { }
 
-        private void groupBox1_Enter(object sender, EventArgs e)
-        {
+        private void musicPlayer_Enter(object sender, EventArgs e) { }
 
-        }
+        private void label1_Click_1(object sender, EventArgs e) { }
 
-        private void pictureBox1_Click(object sender, EventArgs e)
-        {
+        private void label1_Click_2(object sender, EventArgs e) { }
 
-        }
+        private void label1_Click_3(object sender, EventArgs e) { }
 
-
-        private void musicPlayer_Enter(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label1_Click_1(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label1_Click_2(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label1_Click_3(object sender, EventArgs e)
-        {
-
-        }
 
 
 
