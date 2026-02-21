@@ -41,17 +41,20 @@ jobs:
           -o bin/Release/net10.0-windows/win-x64/publish
 
     #Create Git tag for release
-    - name: Create Tag
+    - name: Create Git tag
       id: tagger
-      shell: pwsh
       run: |
-        $tag = "v${{ github.run_number }}"
-        git config user.name "github-actions"
-        git config user.email "github-actions@github.com"
-        git tag $tag
-        git push origin $tag
-        echo "TAG_NAME=$tag" >> $env:GITHUB_OUTPUT 
+        # Get the latest tag and increment it
+        latestTag=$(git describe --tags --abrev=0 2>/dev/null || echo "v0.0.0")
+        echo "Latest tag: $latestTag"
+        IFS='.' read -r major minor patch <<< "${latestTag#v}"
+        patch=$((patch + 1))
+        newTag="v$major.$minor.$patch"
+        echo "New tag: $newTag"
 
+        # Create and push the new tag
+        git config user.name "GitHub Actions"
+        git config user.email "
 
     # Create ZIP archive
     - name: Create release.zip
