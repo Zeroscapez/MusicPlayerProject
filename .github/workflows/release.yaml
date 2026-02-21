@@ -5,6 +5,9 @@ on:
     branches: master
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: windows-latest
@@ -13,8 +16,10 @@ jobs:
     # Checkout repository
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0   # Required for tagging
 
-    #  Setup MSBuild for COM references
+    # Setup MSBuild
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
 
@@ -24,11 +29,11 @@ jobs:
       with:
         dotnet-version: '10.0.x'
 
-    # Restore packages with runtime
+    # Restore packages
     - name: Restore packages
       run: dotnet restore MusicPlayer.csproj --runtime win-x64
 
-    # Build and publish using dotnet
+    # Publish
     - name: Publish portable WinForms
       run: |
         dotnet publish MusicPlayer.csproj `
@@ -40,32 +45,31 @@ jobs:
           -p:PublishTrimmed=false `
           -o bin/Release/net10.0-windows/win-x64/publish
 
-
-    - name: Extract version from .csproj
-      id: extract_version
+    # Extract version from csproj
+    - name: Extract version
+      id: version
+      shell: pwsh
       run: |
         [xml]$csproj = Get-Content "MusicPlayer.csproj"
-        $version = $csproj.Project.PropertyGroup.Version.Trim()
-
-        if (-not $version -or $version -notmatch '^\d+\.\d+\.\d+$') {
-            Write-Error "Version must be in format X.Y.Z (e.g. 1.2.3)"
-            exit 1
+        $version = $csproj.Project.PropertyGroup.Version
+        if (-not $version) {
+          Write-Error "No <Version> found in csproj!"
+          exit 1
         }
-
         $tag = "v$version"
         echo "TAG_NAME=$tag" >> $env:GITHUB_OUTPUT
 
-    #Create Git tag for release
+    # Create and push tag
     - name: Create Git tag
-      id: tagger
+      shell: pwsh
       run: |
         git config user.name "github-actions"
         git config user.email "github-actions@github.com"
         git tag ${{ steps.version.outputs.TAG_NAME }}
         git push origin ${{ steps.version.outputs.TAG_NAME }}
 
-    # Create ZIP archive
-    - name: Create release.zip
+    # Zip publish output
+    - name: Create release archive
       shell: pwsh
       run: |
         $tag = "${{ steps.version.outputs.TAG_NAME }}"
@@ -79,17 +83,17 @@ jobs:
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: release-${{ steps.tagger.outputs.TAG_NAME }}
-        name: release-${{ steps.tagger.outputs.TAG_NAME }}
-        files: release-${{ steps.tagger.outputs.TAG_NAME }}.zip
+        tag_name: ${{ steps.version.outputs.TAG_NAME }}
+        name: ${{ steps.version.outputs.TAG_NAME }}
+        files: MusicPlayer-${{ steps.version.outputs.TAG_NAME }}.zip
         draft: false
         prerelease: false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    # Upload artifact for workflow
-    - name: Upload release.zip artifact
+    # Upload artifact (optional)
+    - name: Upload release artifact
       uses: actions/upload-artifact@v4
       with:
-        name: release-zip
-        path: release.zip
+        name: MusicPlayer-${{ steps.version.outputs.TAG_NAME }}
+        path: MusicPlayer-${{ steps.version.outputs.TAG_NAME }}.zip
