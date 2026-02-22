@@ -42,6 +42,9 @@ namespace MusicPlayer
             timer1.Interval = 500;
             timer1.Tick += timer1_Tick;
             timer1.Start();
+            outputDevice = new WaveOutEvent();
+            outputDevice.PlaybackStopped += OutputDevice_PlaybackStopped;
+
         }
 
 
@@ -123,9 +126,7 @@ namespace MusicPlayer
             audioFile = new AudioFileReader(paths[currentIndex]);
             audioFile.Volume = music_volume.Value / 100f;
 
-            outputDevice = new WaveOutEvent();
             outputDevice.Init(audioFile);
-            outputDevice.PlaybackStopped += OutputDevice_PlaybackStopped;
             outputDevice.Play();
 
             LoadAlbumArt(paths[currentIndex]);
@@ -138,8 +139,6 @@ namespace MusicPlayer
             {
                 outputDevice.PlaybackStopped -= OutputDevice_PlaybackStopped;
                 outputDevice.Stop();
-                outputDevice.Dispose();
-                outputDevice = null;
             }
 
             if (audioFile != null)
@@ -184,8 +183,9 @@ namespace MusicPlayer
                 else
                 {
                     // No more tracks, stop playback and reset index
-                    playOrderPosition = -1;
                     StopPlayback();
+                    playOrderPosition = -1;
+
                 }
             }
         }
@@ -366,6 +366,13 @@ namespace MusicPlayer
 
         }
 
-        
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+
+            outputDevice.Stop();
+            outputDevice.Dispose();
+            base.OnFormClosing(e);
+
+        }
     }
 }
