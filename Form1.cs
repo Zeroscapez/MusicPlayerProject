@@ -20,6 +20,13 @@ namespace MusicPlayer
         private List<string> paths = new();
         private List<string> files = new();
         private int currentIndex = -1;
+
+        //Shuffling
+        private bool isShuffleEnabled = false;
+        private List<int> playOrder = new();
+        private int playOrderPosition = -1;
+        private readonly Random random = new();
+
         public Form1()
         {
             InitializeComponent();
@@ -39,7 +46,7 @@ namespace MusicPlayer
 
 
 
-     
+
         private void label1_Click(object sender, EventArgs e) { }
 
         private void groupBox1_Enter(object sender, EventArgs e) { }
@@ -67,29 +74,53 @@ namespace MusicPlayer
 
             if (dialog.ShowDialog() != DialogResult.OK) return;
 
-          
+
             foreach (var file in dialog.FileNames)
             {
                 paths.Add(file);
                 files.Add(Path.GetFileName(file));
                 track_list.Items.Add(Path.GetFileNameWithoutExtension(file));
             }
-
+            BuildPlayerOrder();
+            UpdatePlaylistDisplay();
             track_list.Invalidate();
-            
+
+        }
+
+        private void BuildPlayerOrder()
+        {
+            playOrder.Clear();
+            for (int i = 0; i < paths.Count; i++)
+            {
+                playOrder.Add(i);
+            }
+            if (isShuffleEnabled)
+            {
+                // Fisher–Yates shuffle
+                for (int i = playOrder.Count - 1; i > 0; i--)
+                {
+                    int j = random.Next(i + 1);
+                    (playOrder[i], playOrder[j]) = (playOrder[j], playOrder[i]);
+                }
+            }
+            playOrderPosition = -1;
+            currentIndex = -1;
+
         }
         #endregion
 
         #region Playback Controls
-        private void PlayTrack(int index)
+        private void PlayTrackByPlayOrder(int orderPosition)
         {
-            if (index < 0 || index >= paths.Count) return;
+            if (orderPosition < 0 || orderPosition >= playOrder.Count)
+                return;
 
-            StopPlayback(); // Stop current playback
+            StopPlayback();
 
-            currentIndex = index;
+            playOrderPosition = orderPosition;
+            currentIndex = playOrder[orderPosition];
 
-            audioFile = new AudioFileReader(paths[index]);
+            audioFile = new AudioFileReader(paths[currentIndex]);
             audioFile.Volume = music_volume.Value / 100f;
 
             outputDevice = new WaveOutEvent();
@@ -97,8 +128,8 @@ namespace MusicPlayer
             outputDevice.PlaybackStopped += OutputDevice_PlaybackStopped;
             outputDevice.Play();
 
-            LoadAlbumArt(paths[index]);
-            track_list.SelectedIndex = index;
+            LoadAlbumArt(paths[currentIndex]);
+            track_list.SelectedIndex = playOrderPosition;
         }
 
         private void StopPlayback()
@@ -146,20 +177,20 @@ namespace MusicPlayer
             if (reachedEnd)
             {
                 // If there is a next track, play it
-                if (currentIndex + 1 < paths.Count)
+                if (playOrderPosition + 1 < playOrder.Count)
                 {
-                    PlayTrack(currentIndex + 1);
+                    PlayTrackByPlayOrder(playOrderPosition + 1);
                 }
                 else
                 {
                     // No more tracks, stop playback and reset index
-                    currentIndex = -1;
+                    playOrderPosition = -1;
                     StopPlayback();
                 }
             }
         }
         #endregion
-      
+
 
         #region Buttons
         private void play_Button_Click(object sender, EventArgs e) => ResumePlayback();
@@ -168,16 +199,34 @@ namespace MusicPlayer
 
         private void next_button_Click(object sender, EventArgs e)
         {
-            if (paths.Count == 0) return;
-            int nextIndex = (currentIndex + 1) % paths.Count;
-            PlayTrack(nextIndex);
+            if (playOrder.Count == 0) return;
+            int nextIndex = (playOrderPosition + 1) % playOrder.Count;
+            PlayTrackByPlayOrder(nextIndex);
         }
 
         private void previous_Button_Click(object sender, EventArgs e)
         {
-            if (paths.Count == 0) return;
-            int prevIndex = (currentIndex - 1 + paths.Count) % paths.Count;
-            PlayTrack(prevIndex);
+            if (playOrder.Count == 0) return;
+            int prevIndex = (playOrderPosition - 1 + playOrder.Count) % playOrder.Count;
+            PlayTrackByPlayOrder(prevIndex);
+        }
+
+        private void shuffle_button_Click(object sender, EventArgs e)
+        {
+            isShuffleEnabled = !isShuffleEnabled;
+
+            shuffle_button.BackColor = isShuffleEnabled
+                ? Color.LightGreen
+                : Color.Black;
+
+            shuffle_button.Text = isShuffleEnabled ? "Shuffle: ON" : "Shuffle: OFF";
+
+            BuildPlayerOrder();
+            UpdatePlaylistDisplay();
+
+
+            playOrderPosition = -1;
+            currentIndex = -1;
         }
 
         #endregion
@@ -186,7 +235,7 @@ namespace MusicPlayer
 
         private void trackBar1_Scroll(object sender, EventArgs e)
         {
-            if(audioFile != null)
+            if (audioFile != null)
             {
                 audioFile.Volume = music_volume.Value / 100f;
             }
@@ -198,10 +247,30 @@ namespace MusicPlayer
         #region Playlist Selection
         private void track_list_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (track_list.SelectedIndex != currentIndex)
-                PlayTrack(track_list.SelectedIndex);
+            if (track_list.SelectedIndex < 0 || playOrder.Count == 0)
+                return;
 
+            // UI index is always the playOrder position
+            int selectedPlayOrderPosition = track_list.SelectedIndex;
 
+            PlayTrackByPlayOrder(selectedPlayOrderPosition);
+
+        }
+
+        private void UpdatePlaylistDisplay()
+        {
+            track_list.Items.Clear();
+
+            for (int i = 0; i < playOrder.Count; i++)
+            {
+                int fileIndex = playOrder[i];
+                string name = Path.GetFileNameWithoutExtension(files[fileIndex]);
+
+                if (isShuffleEnabled)
+                    track_list.Items.Add($"{name}");
+                else
+                    track_list.Items.Add(name);
+            }
         }
 
 
@@ -232,7 +301,7 @@ namespace MusicPlayer
             if (audioFile == null) return;
 
             progressBar.Maximum = (int)audioFile.TotalTime.TotalSeconds;
-            progressBar.Value= Math.Min((int)audioFile.CurrentTime.TotalSeconds, progressBar.Maximum);
+            progressBar.Value = Math.Min((int)audioFile.CurrentTime.TotalSeconds, progressBar.Maximum);
 
             label_trackStart.Text = audioFile.CurrentTime.ToString(@"mm\:ss");
             label_trackEnd.Text = audioFile.TotalTime.ToString(@"mm\:ss");
@@ -260,7 +329,7 @@ namespace MusicPlayer
                 if (pic != null)
                 {
                     using var ms = new MemoryStream(pic.Data.Data);
-                    if(music_art.Image != null)
+                    if (music_art.Image != null)
                     {
                         music_art.Image.Dispose();
                     }
@@ -268,7 +337,7 @@ namespace MusicPlayer
                 }
                 else
                 {
-                    if(music_art.Image != null)
+                    if (music_art.Image != null)
                     {
                         music_art.Image.Dispose();
                     }
@@ -278,7 +347,7 @@ namespace MusicPlayer
             }
             catch
             {
-                if(music_art.Image != null)
+                if (music_art.Image != null)
                 {
                     music_art.Image.Dispose();
                 }
@@ -298,6 +367,5 @@ namespace MusicPlayer
         }
 
         
-
     }
 }
