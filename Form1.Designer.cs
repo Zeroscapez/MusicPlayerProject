@@ -237,11 +237,12 @@
             // 
             music_art.BackColor = Color.Black;
             music_art.BackgroundImageLayout = ImageLayout.None;
+            music_art.BorderStyle = BorderStyle.Fixed3D;
             music_art.Image = Properties.Resources._09;
-            music_art.Location = new Point(772, 61);
+            music_art.Location = new Point(782, 61);
             music_art.Name = "music_art";
-            music_art.Size = new Size(320, 283);
-            music_art.SizeMode = PictureBoxSizeMode.Zoom;
+            music_art.Size = new Size(305, 283);
+            music_art.SizeMode = PictureBoxSizeMode.StretchImage;
             music_art.TabIndex = 3;
             music_art.TabStop = false;
             music_art.Click += pictureBox1_Click;
