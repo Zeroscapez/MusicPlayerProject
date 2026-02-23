@@ -2,7 +2,7 @@ name: Build and Release WinForms (.NET 10)
 
 on:
   push:
-    branches: master, dev
+    branches: dev
   workflow_dispatch:
 
 permissions:
