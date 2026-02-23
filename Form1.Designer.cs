@@ -47,6 +47,8 @@
             label_trackEnd = new Label();
             panel1 = new Panel();
             timer1 = new System.Windows.Forms.Timer(components);
+            folder_button = new Button();
+            folderBrowserDialog1 = new FolderBrowserDialog();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)music_volume).BeginInit();
             ((System.ComponentModel.ISupportInitialize)music_art).BeginInit();
@@ -55,6 +57,7 @@
             // groupBox1
             // 
             groupBox1.BackColor = Color.Black;
+            groupBox1.Controls.Add(folder_button);
             groupBox1.Controls.Add(shuffle_button);
             groupBox1.Controls.Add(next_button);
             groupBox1.Controls.Add(volume_percent);
@@ -283,6 +286,21 @@
             timer1.Enabled = true;
             timer1.Tick += timer1_Tick;
             // 
+            // folder_button
+            // 
+            folder_button.BackColor = Color.Black;
+            folder_button.FlatAppearance.BorderColor = Color.Blue;
+            folder_button.FlatStyle = FlatStyle.Flat;
+            folder_button.Font = new Font("SamsungOneUI Medium Condensed", 11.25F, FontStyle.Bold);
+            folder_button.ForeColor = Color.Blue;
+            folder_button.Location = new Point(425, 26);
+            folder_button.Name = "folder_button";
+            folder_button.Size = new Size(63, 30);
+            folder_button.TabIndex = 9;
+            folder_button.Text = "Folder";
+            folder_button.UseVisualStyleBackColor = false;
+            folder_button.Click += folder_button_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -324,5 +342,7 @@
         private Button next_button;
         private System.Windows.Forms.Timer timer1;
         private Button shuffle_button;
+        private Button folder_button;
+        private FolderBrowserDialog folderBrowserDialog1;
     }
 }
