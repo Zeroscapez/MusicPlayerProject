@@ -1,67 +1,51 @@
-name: Build and Release
+name: Build and Release WinForms (.NET 10)
 
 on:
   push:
-    branches:
-      - master
+    tags:
+      - 'v*'
 
 permissions:
   contents: write
 
 jobs:
-  version:
+  build:
     runs-on: windows-latest
 
     steps:
       - uses: actions/checkout@v4
+
+      - uses: microsoft/setup-msbuild@v2
+
+      - uses: actions/setup-dotnet@v4
         with:
-          fetch-depth: 0
+          dotnet-version: '10.0.x'
 
-      - name: Calculate next version
-        id: version
+      - name: Restore
+        run: dotnet restore MusicPlayer.csproj --runtime win-x64
+
+      - name: Publish
+        run: |
+          dotnet publish MusicPlayer.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:PublishTrimmed=false `
+            -o publish
+
+      - name: Create ZIP
         shell: pwsh
         run: |
-          git fetch --tags
+          $tag = "${{ github.ref_name }}"
+          Compress-Archive -Path "publish/*" -DestinationPath "MusicPlayer-$tag.zip" -Force
 
-          $latestTag = git tag --list "v*" --sort=-v:refname | Select-Object -First 1
-
-          if (-not $latestTag) {
-              $latestTag = "v0.0.0"
-          }
-
-          $version = $latestTag.TrimStart("v")
-          $parts = $version.Split(".")
-
-          $major = [int]$parts[0]
-          $minor = [int]$parts[1]
-          $patch = [int]$parts[2]
-
-          $commitMessage = git log -1 --pretty=%B
-
-          if ($commitMessage -match "#major") {
-              $major++
-              $minor = 0
-              $patch = 0
-          }
-          elseif ($commitMessage -match "#minor") {
-              $minor++
-              $patch = 0
-          }
-          else {
-              $patch++
-          }
-
-          $newVersion = "v$major.$minor.$patch"
-
-          echo "TAG_NAME=$newVersion" >> $env:GITHUB_OUTPUT
-
-      - name: Create tag
-        shell: pwsh
-        run: |
-          $tag = "${{ steps.version.outputs.TAG_NAME }}"
-
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-
-          git tag $tag
-          git push origin $tag
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: MusicPlayer-${{ github.ref_name }}.zip
+          name: ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
