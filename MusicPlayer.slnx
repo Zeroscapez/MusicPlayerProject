@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="../MusicPlayer.Tests/MusicPlayer.Tests.csproj" Id="dae91637-4ff0-4dbc-a850-e4adac4fccc0" />
   <Project Path="MusicPlayer.csproj" />
 </Solution>

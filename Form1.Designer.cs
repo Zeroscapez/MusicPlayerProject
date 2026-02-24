@@ -30,6 +30,7 @@
         {
             components = new System.ComponentModel.Container();
             groupBox1 = new GroupBox();
+            shuffle_button = new Button();
             next_button = new Button();
             volume_percent = new Label();
             volume_label = new Label();
@@ -46,6 +47,8 @@
             label_trackEnd = new Label();
             panel1 = new Panel();
             timer1 = new System.Windows.Forms.Timer(components);
+            folder_button = new Button();
+            folderBrowserDialog1 = new FolderBrowserDialog();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)music_volume).BeginInit();
             ((System.ComponentModel.ISupportInitialize)music_art).BeginInit();
@@ -54,6 +57,8 @@
             // groupBox1
             // 
             groupBox1.BackColor = Color.Black;
+            groupBox1.Controls.Add(folder_button);
+            groupBox1.Controls.Add(shuffle_button);
             groupBox1.Controls.Add(next_button);
             groupBox1.Controls.Add(volume_percent);
             groupBox1.Controls.Add(volume_label);
@@ -74,6 +79,22 @@
             groupBox1.Text = "Controls";
             groupBox1.Enter += groupBox1_Enter;
             // 
+            // shuffle_button
+            // 
+            shuffle_button.BackColor = Color.Black;
+            shuffle_button.FlatAppearance.BorderColor = Color.Blue;
+            shuffle_button.FlatStyle = FlatStyle.Flat;
+            shuffle_button.Font = new Font("SamsungOneUI Medium Condensed", 11.25F, FontStyle.Bold);
+            shuffle_button.ForeColor = Color.Blue;
+            shuffle_button.Location = new Point(595, 26);
+            shuffle_button.Name = "shuffle_button";
+            shuffle_button.Size = new Size(106, 30);
+            shuffle_button.TabIndex = 8;
+            shuffle_button.Text = "Shuffle: OFF";
+            shuffle_button.TextAlign = ContentAlignment.MiddleLeft;
+            shuffle_button.UseVisualStyleBackColor = false;
+            shuffle_button.Click += shuffle_button_Click;
+            // 
             // next_button
             // 
             next_button.BackColor = Color.Black;
@@ -81,9 +102,9 @@
             next_button.FlatStyle = FlatStyle.Flat;
             next_button.Font = new Font("SamsungOneUI Medium Condensed", 11.25F, FontStyle.Bold);
             next_button.ForeColor = Color.Blue;
-            next_button.Location = new Point(131, 26);
+            next_button.Location = new Point(80, 26);
             next_button.Name = "next_button";
-            next_button.Size = new Size(105, 30);
+            next_button.Size = new Size(63, 30);
             next_button.TabIndex = 7;
             next_button.Text = "Next";
             next_button.UseVisualStyleBackColor = false;
@@ -139,9 +160,9 @@
             open_Button.FlatStyle = FlatStyle.Flat;
             open_Button.Font = new Font("SamsungOneUI Medium Condensed", 11.25F, FontStyle.Bold);
             open_Button.ForeColor = Color.Blue;
-            open_Button.Location = new Point(575, 26);
+            open_Button.Location = new Point(356, 26);
             open_Button.Name = "open_Button";
-            open_Button.Size = new Size(105, 30);
+            open_Button.Size = new Size(63, 30);
             open_Button.TabIndex = 4;
             open_Button.Text = "Open";
             open_Button.UseVisualStyleBackColor = false;
@@ -154,9 +175,9 @@
             stop_Button.FlatStyle = FlatStyle.Flat;
             stop_Button.Font = new Font("SamsungOneUI Medium Condensed", 11.25F, FontStyle.Bold);
             stop_Button.ForeColor = Color.Blue;
-            stop_Button.Location = new Point(464, 26);
+            stop_Button.Location = new Point(287, 26);
             stop_Button.Name = "stop_Button";
-            stop_Button.Size = new Size(105, 30);
+            stop_Button.Size = new Size(63, 30);
             stop_Button.TabIndex = 3;
             stop_Button.Text = "Stop";
             stop_Button.UseVisualStyleBackColor = false;
@@ -169,9 +190,9 @@
             pause_Button.FlatStyle = FlatStyle.Flat;
             pause_Button.Font = new Font("SamsungOneUI Medium Condensed", 11.25F, FontStyle.Bold);
             pause_Button.ForeColor = Color.Blue;
-            pause_Button.Location = new Point(353, 26);
+            pause_Button.Location = new Point(218, 26);
             pause_Button.Name = "pause_Button";
-            pause_Button.Size = new Size(105, 30);
+            pause_Button.Size = new Size(63, 30);
             pause_Button.TabIndex = 2;
             pause_Button.Text = "Pause";
             pause_Button.UseVisualStyleBackColor = false;
@@ -184,9 +205,9 @@
             play_Button.FlatStyle = FlatStyle.Flat;
             play_Button.Font = new Font("SamsungOneUI Medium Condensed", 11.25F, FontStyle.Bold);
             play_Button.ForeColor = Color.Blue;
-            play_Button.Location = new Point(242, 26);
+            play_Button.Location = new Point(149, 26);
             play_Button.Name = "play_Button";
-            play_Button.Size = new Size(105, 30);
+            play_Button.Size = new Size(63, 30);
             play_Button.TabIndex = 1;
             play_Button.Text = "Play";
             play_Button.UseVisualStyleBackColor = false;
@@ -199,9 +220,9 @@
             previous_Button.FlatStyle = FlatStyle.Flat;
             previous_Button.Font = new Font("SamsungOneUI Medium Condensed", 11.25F, FontStyle.Bold);
             previous_Button.ForeColor = Color.Blue;
-            previous_Button.Location = new Point(20, 26);
+            previous_Button.Location = new Point(11, 26);
             previous_Button.Name = "previous_Button";
-            previous_Button.Size = new Size(105, 30);
+            previous_Button.Size = new Size(63, 30);
             previous_Button.TabIndex = 0;
             previous_Button.Text = "Previous";
             previous_Button.UseVisualStyleBackColor = false;
@@ -219,11 +240,12 @@
             // 
             music_art.BackColor = Color.Black;
             music_art.BackgroundImageLayout = ImageLayout.None;
+            music_art.BorderStyle = BorderStyle.Fixed3D;
             music_art.Image = Properties.Resources._09;
-            music_art.Location = new Point(772, 61);
+            music_art.Location = new Point(782, 61);
             music_art.Name = "music_art";
-            music_art.Size = new Size(320, 283);
-            music_art.SizeMode = PictureBoxSizeMode.Zoom;
+            music_art.Size = new Size(305, 283);
+            music_art.SizeMode = PictureBoxSizeMode.StretchImage;
             music_art.TabIndex = 3;
             music_art.TabStop = false;
             music_art.Click += pictureBox1_Click;
@@ -263,6 +285,21 @@
             // 
             timer1.Enabled = true;
             timer1.Tick += timer1_Tick;
+            // 
+            // folder_button
+            // 
+            folder_button.BackColor = Color.Black;
+            folder_button.FlatAppearance.BorderColor = Color.Blue;
+            folder_button.FlatStyle = FlatStyle.Flat;
+            folder_button.Font = new Font("SamsungOneUI Medium Condensed", 11.25F, FontStyle.Bold);
+            folder_button.ForeColor = Color.Blue;
+            folder_button.Location = new Point(425, 26);
+            folder_button.Name = "folder_button";
+            folder_button.Size = new Size(63, 30);
+            folder_button.TabIndex = 9;
+            folder_button.Text = "Folder";
+            folder_button.UseVisualStyleBackColor = false;
+            folder_button.Click += folder_button_Click;
             // 
             // Form1
             // 
@@ -304,5 +341,8 @@
         private Panel panel1;
         private Button next_button;
         private System.Windows.Forms.Timer timer1;
+        private Button shuffle_button;
+        private Button folder_button;
+        private FolderBrowserDialog folderBrowserDialog1;
     }
 }
