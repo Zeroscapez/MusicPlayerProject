@@ -1,4 +1,4 @@
-name: Create Version Tag
+name: Create 
 
 on:
   push:
@@ -63,5 +63,5 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-          git tag $tag
+          git tag -a $tag -m "Release $tag"
           git push origin $tag
