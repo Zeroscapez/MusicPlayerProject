@@ -1,46 +1,67 @@
-name: Build and Release WinForms (.NET 10)
+name: Build and Release
 
 on:
   push:
-    branches: dev
-  workflow_dispatch:
+    branches:
+      - master
 
 permissions:
   contents: write
 
 jobs:
-  build:
+  version:
     runs-on: windows-latest
 
     steps:
-    # Checkout repository
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0   # Required for tagging
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    # Setup MSBuild
-    - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v2
+      - name: Calculate next version
+        id: version
+        shell: pwsh
+        run: |
+          git fetch --tags
 
-    # Setup .NET 10 SDK
-    - name: Setup .NET 10
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '10.0.x'
+          $latestTag = git tag --list "v*" --sort=-v:refname | Select-Object -First 1
 
-    # Restore packages
-    - name: Restore packages
-      run: dotnet restore MusicPlayer.csproj --runtime win-x64
+          if (-not $latestTag) {
+              $latestTag = "v0.0.0"
+          }
 
-    # Publish
-    - name: Publish portable WinForms
-      run: |
-        dotnet publish MusicPlayer.csproj `
-          -c Release `
-          -r win-x64 `
-          --self-contained `
-          -p:PublishSingleFile=true `
-          -p:IncludeNativeLibrariesForSelfExtract=true `
-          -p:PublishTrimmed=false `
-          -o bin/Release/net10.0-windows/win-x64/publish
+          $version = $latestTag.TrimStart("v")
+          $parts = $version.Split(".")
+
+          $major = [int]$parts[0]
+          $minor = [int]$parts[1]
+          $patch = [int]$parts[2]
+
+          $commitMessage = git log -1 --pretty=%B
+
+          if ($commitMessage -match "#major") {
+              $major++
+              $minor = 0
+              $patch = 0
+          }
+          elseif ($commitMessage -match "#minor") {
+              $minor++
+              $patch = 0
+          }
+          else {
+              $patch++
+          }
+
+          $newVersion = "v$major.$minor.$patch"
+
+          echo "TAG_NAME=$newVersion" >> $env:GITHUB_OUTPUT
+
+      - name: Create tag
+        shell: pwsh
+        run: |
+          $tag = "${{ steps.version.outputs.TAG_NAME }}"
+
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git tag $tag
+          git push origin $tag
