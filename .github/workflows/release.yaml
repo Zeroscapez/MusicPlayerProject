@@ -1,4 +1,4 @@
-name: Build and Release WinForms (.NET 10)
+name: Build and Release
 
 on:
   push:
@@ -45,7 +45,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: MusicPlayer-${{ github.ref_name }}.zip
-          name: ${{ github.ref_name }}
+          name: release-${{ github.ref_name }}
           tag_name: ${{ github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
