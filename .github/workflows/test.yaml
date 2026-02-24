@@ -3,7 +3,7 @@ name: Test Build and Publish
 on:
   push:
     branches: 
-      - main
+      - master
       - dev
   workflow_dispatch:
 
