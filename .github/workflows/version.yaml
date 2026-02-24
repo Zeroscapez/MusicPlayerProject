@@ -60,8 +60,24 @@ jobs:
         run: |
           $tag = "${{ steps.version.outputs.TAG_NAME }}"
 
-          git config user.name "github-actions"
+           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
+
+          # Make sure tags are up to date
+          git fetch --tags
+
+          # Check if tag already exists
+          if (git rev-parse $tag 2>$null) {
+              Write-Host "Tag $tag already exists. Skipping."
+              exit 0
+          }
+
+          # Check if current commit already has a tag
+          $currentTags = git tag --points-at HEAD
+          if ($currentTags) {
+              Write-Host "Current commit already tagged: $currentTags"
+              exit 0
+          }
 
           git tag -a $tag -m "Release $tag"
           git push origin $tag
