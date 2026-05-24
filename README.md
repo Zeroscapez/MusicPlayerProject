@@ -1,3 +1,6 @@
+<img width="1100" height="448" alt="image" src="https://github.com/user-attachments/assets/56f90105-623a-49f2-a394-819912cd91cd" />
+
+
 # 🎵 MusicPlayer
 
 A lightweight Windows desktop music player built with **.NET WinForms**, powered by **NAudio** for audio playback and **TagLib#** for metadata and album art extraction.
