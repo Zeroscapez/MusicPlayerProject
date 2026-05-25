@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="NAudio" Version="2.2.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.7" />
     <PackageReference Include="taglib-sharp-netstandard2.0" Version="2.1.0" />
   </ItemGroup>
 

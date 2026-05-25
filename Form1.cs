@@ -38,6 +38,8 @@ namespace MusicPlayer
             timer1.Interval = 500;
             timer1.Tick += timer1_Tick;
             timer1.Start();
+
+
             outputDevice = new WaveOutEvent();
             outputDevice.PlaybackStopped += OutputDevice_PlaybackStopped;
 
@@ -49,7 +51,39 @@ namespace MusicPlayer
             {
                 LoadMusicFromFolder(musicFolderPath);
             }
+
+            //Web Api Bridge
+            var svc = Program.PlayerService;
+
+            svc.Play = () => this.Invoke(ResumePlayback);
+            svc.Pause = () => this.Invoke(PausePlayback);
+            svc.Stop = () => this.Invoke(StopPlayback);
+            svc.Next = () => this.Invoke(() => next_button_Click(this, EventArgs.Empty));
+            svc.Previous = () => this.Invoke(() => previous_Button_Click(this, EventArgs.Empty));
+
+            svc.SetVolume = (v) => this.Invoke(() =>
+            {
+                music_volume.Value = Math.Clamp(v, music_volume.Minimum, music_volume.Maximum);
+                if (audioFile != null) audioFile.Volume = v / 100f;
+                volume_percent.Text = v + "%";
+            });
+
+            svc.GetNowPlaying = () => new NowPlayingInfo
+            {
+                TrackName = audioFile != null && currentIndex >= 0
+                                   ? playlist[currentIndex].DisplayName
+                                   : null,
+                CurrentSeconds = audioFile?.CurrentTime.TotalSeconds ?? 0,
+                TotalSeconds = audioFile?.TotalTime.TotalSeconds ?? 0,
+                IsPlaying = outputDevice?.PlaybackState == PlaybackState.Playing,
+                Volume = music_volume.Value
+            };
+
+            svc.GetPlaylist = () => playlist.Select(t => t.DisplayName).ToList();
         }
+
+
+
 
 
 
@@ -68,6 +102,6 @@ namespace MusicPlayer
 
         private void label1_Click_3(object sender, EventArgs e) { }
 
-       
+
     }
 }

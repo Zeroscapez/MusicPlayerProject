@@ -66,25 +66,23 @@ namespace MusicPlayer
 
         private void ResumePlayback()
         {
-            if(audioFile == null && playOrder.Count > 0)
+            if (audioFile == null && playOrder.Count > 0)
             {
                 PlayTrackByPlayOrder(playOrderPosition >= 0 ? playOrderPosition : 0);
             }
-            else if( audioFile != null)
+            else if (audioFile != null)
             {
                 outputDevice?.Play();
             }
-            
+
         }
 
-      
+
 
         private void OutputDevice_PlaybackStopped(object sender, StoppedEventArgs e)
         {
             if (e.Exception != null) return;
-            if (isHandlingStop) return;
 
-            isHandlingStop = true;
 
             if (InvokeRequired)
             {
@@ -96,21 +94,28 @@ namespace MusicPlayer
                 return;
             }
 
-            // Only auto-advance if the track actually finished
-            if (audioFile != null && audioFile.Position >= audioFile.Length - 500)
+            if (isHandlingStop) return;
+
+            isHandlingStop = true;
+
+
+            try
             {
-                if (playOrderPosition + 1 < playOrder.Count)
+                if (audioFile != null && audioFile.Position >= audioFile.Length - 500)
                 {
-                    PlayTrackByPlayOrder(playOrderPosition + 1);
-                }
-                else
-                {
-                    StopPlayback();
-                    playOrderPosition = -1;
+                    if (playOrderPosition + 1 < playOrder.Count)
+                        PlayTrackByPlayOrder(playOrderPosition + 1);
+                    else
+                    {
+                        StopPlayback();
+                        playOrderPosition = -1;
+                    }
                 }
             }
-
-            isHandlingStop = false;
+            finally
+            {
+                isHandlingStop = false;
+            }
         }
         #endregion
 
