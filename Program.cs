@@ -22,11 +22,18 @@ namespace MusicPlayer
 
                 // Register our PlayerService as a singleton so controllers can get it
                 builder.Services.AddSingleton(PlayerService);
+                builder.Services.AddSingleton<RoomService>();
+                builder.Services.AddHttpContextAccessor();
                 builder.Services.AddControllers();
 
                 //Swagger
                 builder.Services.AddEndpointsApiExplorer();
                 builder.Services.AddSwaggerGen();
+
+                builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
+                {
+                    options.MultipartBodyLengthLimit = 52428800; // 50 MB
+                });
 
                 //CORS - Allow any origin (for development purposes)
                 builder.Services.AddCors(options =>
@@ -60,6 +67,8 @@ namespace MusicPlayer
 
 
                 app.MapControllers();
+
+
                 app.Run();
             });
 

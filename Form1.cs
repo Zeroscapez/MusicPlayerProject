@@ -80,6 +80,23 @@ namespace MusicPlayer
             };
 
             svc.GetPlaylist = () => playlist.Select(t => t.DisplayName).ToList();
+
+            svc.AddToPlaylist = (path) => this.Invoke(() =>
+            {
+                AddTrack(path);
+                BuildPlayerOrder();
+                UpdatePlaylistDisplay();
+            });
+
+            svc.RemoveFromPlaylist = (index) => this.Invoke(() =>
+            {
+                if (index < 0 || index >= playlist.Count)
+                    return;
+
+                playlist.RemoveAt(index);
+                BuildPlayerOrder();
+                UpdatePlaylistDisplay();
+            });
         }
 
 

@@ -19,5 +19,7 @@ namespace MusicPlayer
         public Action? Next { get; set; }
         public Action? Previous { get; set; }
         public Action<int>? SetVolume { get; set; }
+        public Action<string>? AddToPlaylist { get; set; }
+        public Action<int>? RemoveFromPlaylist { get; set; }
     }
 }

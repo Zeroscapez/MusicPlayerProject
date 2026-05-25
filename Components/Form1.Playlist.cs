@@ -12,7 +12,7 @@ namespace MusicPlayer
         private int playOrderPosition = -1;
         private string musicFolderPath = null;
         private readonly string[] supportedExtensions = { ".mp3", ".wav", ".flac", ".aac", ".ogg" };
-
+        private bool isSyncingSelection = false;
 
         private void BuildPlayerOrder()
         {
@@ -37,13 +37,10 @@ namespace MusicPlayer
 
         private void track_list_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (track_list.SelectedIndex < 0 || playOrder.Count == 0)
-                return;
+            if (isSyncingSelection) return; // ← ignore programmatic changes
+            if (track_list.SelectedIndex < 0 || playOrder.Count == 0) return;
 
-            // UI index is always the playOrder position
-            int selectedPlayOrderPosition = track_list.SelectedIndex;
-
-            PlayTrackByPlayOrder(selectedPlayOrderPosition);
+            PlayTrackByPlayOrder(track_list.SelectedIndex);
 
         }
 

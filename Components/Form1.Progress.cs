@@ -8,10 +8,22 @@ namespace MusicPlayer
     {
         private void timer1_Tick(object sender, EventArgs e)
         {
-            if (audioFile == null) return;
+            if (audioFile == null)
+            {
+                progressBar.Value = 0;
+                label_trackStart.Text = "00:00";
+                label_trackEnd.Text = "00:00";
+                return;
+            }
 
-            progressBar.Maximum = (int)audioFile.TotalTime.TotalSeconds;
-            progressBar.Value = Math.Min((int)audioFile.CurrentTime.TotalSeconds, progressBar.Maximum);
+            var current = (int)audioFile.CurrentTime.TotalSeconds;
+            var total = (int)audioFile.TotalTime.TotalSeconds;
+
+            // Only set Maximum once per track, not every tick
+            if (progressBar.Maximum != total)
+                progressBar.Maximum = total;
+
+            progressBar.Value = Math.Min(current, progressBar.Maximum - 1);
 
             label_trackStart.Text = audioFile.CurrentTime.ToString(@"mm\:ss");
             label_trackEnd.Text = audioFile.TotalTime.ToString(@"mm\:ss");

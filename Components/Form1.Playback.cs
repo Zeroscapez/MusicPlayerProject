@@ -8,41 +8,55 @@ namespace MusicPlayer
 {
     public partial class Form1
     {
-        private bool isHandlingStop = false;
+
+        private bool isIntentionalStop = false;
         #region Playback Controls
         private void PlayTrackByPlayOrder(int orderPosition)
         {
             if (orderPosition < 0 || orderPosition >= playOrder.Count)
                 return;
 
-            StopPlayback();
+            // Dispose old audio file without calling outputDevice.Stop()
+            // This avoids firing PlaybackStopped entirely
+            isIntentionalStop = true;
+            outputDevice.Stop();
+
+            if (audioFile != null)
+            {
+                audioFile.Dispose();
+                audioFile = null;
+            }
+
+            if (music_art.Image != null)
+            {
+                music_art.Image.Dispose();
+                music_art.Image = null;
+            }
+
+            progressBar.Value = 0;
 
             playOrderPosition = orderPosition;
             currentIndex = playOrder[orderPosition];
 
             var track = playlist[currentIndex];
             audioFile = new AudioFileReader(track.FilePath);
+            audioFile.Volume = music_volume.Value / 100f;
+
 
             outputDevice.Init(audioFile);
             outputDevice.Play();
 
-            if (audioFile != null)
-            {
-                audioFile.Volume = music_volume.Value / 100f;
-            }
-
             LoadAlbumArt(track.FilePath);
+
+            isSyncingSelection = true;
             track_list.SelectedIndex = playOrderPosition;
+            isSyncingSelection = false;
         }
 
         private void StopPlayback()
         {
-            Console.WriteLine("Playback Stopped");
-            if (outputDevice != null)
-            {
-                //outputDevice.PlaybackStopped -= OutputDevice_PlaybackStopped;
-                outputDevice.Stop();
-            }
+            isIntentionalStop = true;
+            outputDevice?.Stop();
 
             if (audioFile != null)
             {
@@ -83,38 +97,29 @@ namespace MusicPlayer
         {
             if (e.Exception != null) return;
 
-
             if (InvokeRequired)
             {
-                BeginInvoke(new Action(() =>
-                {
-                    isHandlingStop = false;
-                    OutputDevice_PlaybackStopped(sender, e);
-                }));
+                BeginInvoke(new Action(() => OutputDevice_PlaybackStopped(sender, e)));
                 return;
             }
 
-            if (isHandlingStop) return;
-
-            isHandlingStop = true;
-
-
-            try
+            if (isIntentionalStop)
             {
-                if (audioFile != null && audioFile.Position >= audioFile.Length - 500)
-                {
-                    if (playOrderPosition + 1 < playOrder.Count)
-                        PlayTrackByPlayOrder(playOrderPosition + 1);
-                    else
-                    {
-                        StopPlayback();
-                        playOrderPosition = -1;
-                    }
-                }
+                isIntentionalStop = false;
+                return;
             }
-            finally
+
+            // Track naturally finished, auto advance
+            if (playOrderPosition + 1 < playOrder.Count)
             {
-                isHandlingStop = false;
+                PlayTrackByPlayOrder(playOrderPosition + 1);
+            }
+            else
+            {
+                isIntentionalStop = true; // prevent StopPlayback from triggering auto advance
+                StopPlayback();
+                isIntentionalStop = false;
+                playOrderPosition = -1;
             }
         }
         #endregion

@@ -31,6 +31,12 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
         }
 
+        h2 {
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            color: #1db954;
+        }
+
         .track-name {
             font-size: 1.2rem;
             font-weight: bold;
@@ -52,7 +58,6 @@
             height: 6px;
             margin-bottom: 8px;
             cursor: pointer;
-            position: relative;
         }
 
         .progress-fill {
@@ -109,10 +114,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
-        }
-
-        .volume-row span {
-            font-size: 1rem;
+            margin-bottom: 24px;
         }
 
         input[type=range] {
@@ -126,116 +128,410 @@
             width: 36px;
             text-align: right;
         }
+
+        /* Join page */
+        #join-page input[type=text] {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: #2a2a2a;
+            color: #fff;
+            font-size: 1.2rem;
+            text-align: center;
+            letter-spacing: 4px;
+            margin-bottom: 16px;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background: #1db954;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 8px;
+            height: auto;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary:hover {
+            background: #1ed760;
+        }
+
+        .btn-secondary {
+            width: 100%;
+            padding: 10px;
+            background: #333;
+            border: none;
+            border-radius: 8px;
+            color: #aaa;
+            font-size: 0.9rem;
+            cursor: pointer;
+            height: auto;
+        }
+
+        .btn-secondary:hover {
+            background: #444;
+        }
+
+        .error {
+            color: #e74c3c;
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+        }
+
+        /* Upload section */
+        .upload-section {
+            border-top: 1px solid #333;
+            padding-top: 20px;
+            margin-top: 4px;
+        }
+
+        .upload-label {
+            display: block;
+            padding: 10px;
+            background: #2a2a2a;
+            border: 2px dashed #444;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-bottom: 10px;
+            transition: border-color 0.2s;
+        }
+
+        .upload-label:hover {
+            border-color: #1db954;
+            color: #fff;
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        #upload-status {
+            font-size: 0.8rem;
+            color: #aaa;
+            min-height: 20px;
+        }
+
+        /* Queue section */
+        .queue-section {
+            border-top: 1px solid #333;
+            padding-top: 20px;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .queue-title {
+            font-size: 0.85rem;
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+
+        .queue-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #2a2a2a;
+            font-size: 0.85rem;
+        }
+
+        .queue-item span {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 220px;
+        }
+
+        .queue-item .uploader {
+            font-size: 0.75rem;
+            color: #aaa;
+        }
     </style>
 </head>
 
 <body>
-    <div class="card">
+
+    <!-- Join Page -->
+    <div class="card" id="join-page">
+        <h2>🎵 Music Room</h2>
+        <p style="color:#aaa; font-size:0.9rem; margin-bottom:20px;">Enter the room code to join</p>
+        <input type="text" id="room-code-input" placeholder="XXXXXX" maxlength="6">
+        <div class="error" id="join-error"></div>
+        <button class="btn-primary" onclick="joinRoom()">Join Room</button>
+        <button class="btn-secondary" onclick="showHostLogin()">I'm the host</button>
+    </div>
+
+    <!-- Host Login Page -->
+    <div class="card" id="host-page" style="display:none;">
+        <h2>🎵 Host Login</h2>
+        <input type="text" id="api-key-input" placeholder="Enter API key" style="width:100%;padding:12px;border-radius:8px;border:1px solid #333;
+                      background:#2a2a2a;color:#fff;font-size:1rem;margin-bottom:16px;">
+        <div class="error" id="host-error"></div>
+        <button class="btn-primary" onclick="hostLogin()">Login</button>
+        <button class="btn-secondary" onclick="showJoinPage()">Back</button>
+    </div>
+
+    <!-- Player Page -->
+    <div class="card" id="player-page" style="display:none;">
         <div class="track-name" id="track-name">Nothing playing</div>
         <div class="status" id="status">Stopped</div>
 
-        <div class="progress-bar" id="progress-bar">
-            <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill" style="width:0%"></div>
         </div>
         <div class="time-row">
             <span id="time-current">0:00</span>
             <span id="time-total">0:00</span>
         </div>
 
-        <div class="controls">
-            <button id="btn-prev" title="Previous">⏮</button>
-            <button id="btn-play" title="Play/Pause">▶</button>
-            <button id="btn-next" title="Next">⏭</button>
+        <!-- Host controls only -->
+        <div class="controls" id="host-controls" style="display:none;">
+            <button id="btn-prev">⏮</button>
+            <button id="btn-play">▶</button>
+            <button id="btn-next">⏭</button>
         </div>
 
-        <div class="volume-row">
+        <!-- Host volume only -->
+        <div class="volume-row" id="host-volume" style="display:none;">
             <span>🔈</span>
             <input type="range" id="volume-slider" min="0" max="100" value="50">
             <span>🔊</span>
             <span id="volume-label">50%</span>
+        </div>
+
+        <!-- Upload section - everyone -->
+        <div class="upload-section">
+            <label class="upload-label" for="file-input">
+                ➕ Upload a song
+            </label>
+            <input type="file" id="file-input" accept=".mp3,.wav,.flac,.aac,.ogg">
+            <div id="upload-status"></div>
+        </div>
+
+        <!-- Queue -->
+        <div class="queue-section">
+            <div class="queue-title">Queue</div>
+            <div id="queue-list"></div>
         </div>
     </div>
 
     <script>
         const BASE = `http://${window.location.hostname}:5000`;
         const API = `${BASE}/api/player`;
-        const API_KEY = 'your-secret-key-here';
 
-        function fmt(seconds) {
-            const m = Math.floor(seconds / 60);
-            const s = Math.floor(seconds % 60).toString().padStart(2, '0');
-            return `${m}:${s}`;
+        let apiKey = null;
+        let guestToken = null;
+        let isHost = false;
+
+        // ── Auth headers ──────────────────────────────────────────
+        function authHeaders(extra = {}) {
+            if (isHost) return { 'X-Api-Key': apiKey, ...extra };
+            return { 'X-Guest-Token': guestToken, ...extra };
         }
 
-        async function post(endpoint) {
-            await fetch(`${API}/${endpoint}`, {
-                method: 'POST',
-                headers: {
-                    'X-API-Key': API_KEY
-                }
+        // ── Page navigation ───────────────────────────────────────
+        function showPage(id) {
+            ['join-page', 'host-page', 'player-page'].forEach(p => {
+                document.getElementById(p).style.display = p === id ? 'block' : 'none';
             });
         }
 
+        function showHostLogin() { showPage('host-page'); }
+        function showJoinPage() { showPage('join-page'); }
+
+        // ── Join as guest ─────────────────────────────────────────
+        async function joinRoom() {
+            const code = document.getElementById('room-code-input').value.trim();
+            if (!code) return;
+
+            const res = await fetch(`${BASE}/api/room/join`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(code)
+            });
+
+            if (!res.ok) {
+                document.getElementById('join-error').textContent = 'Invalid room code';
+                return;
+            }
+
+            const data = await res.json();
+            guestToken = data.token;
+            isHost = false;
+            enterPlayer();
+        }
+
+        // ── Login as host ─────────────────────────────────────────
+        async function hostLogin() {
+            const key = document.getElementById('api-key-input').value.trim();
+            if (!key) return;
+
+            // Verify the key works by hitting a protected endpoint
+            const res = await fetch(`${API}/nowplaying`, {
+                headers: { 'X-Api-Key': key }
+            });
+
+            if (!res.ok) {
+                document.getElementById('host-error').textContent = 'Invalid API key';
+                return;
+            }
+
+            apiKey = key;
+            isHost = true;
+            enterPlayer();
+        }
+
+        // ── Enter the player ──────────────────────────────────────
+        function enterPlayer() {
+            showPage('player-page');
+
+            if (isHost) {
+                document.getElementById('host-controls').style.display = 'flex';
+                document.getElementById('host-volume').style.display = 'flex';
+            }
+
+            // Wire up host controls
+            document.getElementById('btn-play').addEventListener('click', async () => {
+                const status = document.getElementById('status').textContent;
+                await post(status === 'Playing' ? 'pause' : 'play');
+            });
+
+            document.getElementById('btn-prev')?.addEventListener('click', () => post('previous'));
+            document.getElementById('btn-next')?.addEventListener('click', () => post('next'));
+
+            document.getElementById('volume-slider')?.addEventListener('change', async (e) => {
+                await fetch(`${API}/volume`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+                    body: e.target.value
+                });
+            });
+
+            // Wire up upload
+            document.getElementById('file-input').addEventListener('change', uploadFile);
+
+            // Start polling
+            refresh();
+            setInterval(refresh, 1000);
+            setInterval(refreshQueue, 3000);
+        }
+
+        // ── API helpers ───────────────────────────────────────────
+        async function post(endpoint) {
+            await fetch(`${API}/${endpoint}`, {
+                method: 'POST',
+                headers: authHeaders()
+            });
+        }
+
+        // ── Now playing ───────────────────────────────────────────
         async function refresh() {
             try {
-                const res = await fetch(`${API}/nowplaying`, {
-                    headers: {
-                        'X-API-Key': API_KEY
-                    }
-                });
+                const res = await fetch(`${API}/nowplaying`, { headers: authHeaders() });
                 const data = await res.json();
 
-                document.getElementById('track-name').textContent =
-                    data.trackName ?? 'Nothing playing';
-
-                document.getElementById('status').textContent =
-                    data.isPlaying ? 'Playing' : 'Paused';
-
-                document.getElementById('btn-play').textContent =
-                    data.isPlaying ? '⏸' : '▶';
+                document.getElementById('track-name').textContent = data.trackName ?? 'Nothing playing';
+                document.getElementById('status').textContent = data.isPlaying ? 'Playing' : 'Paused';
+                document.getElementById('btn-play').textContent = data.isPlaying ? '⏸' : '▶';
 
                 const pct = data.totalSeconds > 0
-                    ? (data.currentSeconds / data.totalSeconds) * 100
-                    : 0;
+                    ? (data.currentSeconds / data.totalSeconds) * 100 : 0;
                 document.getElementById('progress-fill').style.width = pct + '%';
-
                 document.getElementById('time-current').textContent = fmt(data.currentSeconds);
                 document.getElementById('time-total').textContent = fmt(data.totalSeconds);
 
-                document.getElementById('volume-slider').value = data.volume;
-                document.getElementById('volume-label').textContent = data.volume + '%';
+                if (isHost) {
+                    document.getElementById('volume-slider').value = data.volume;
+                    document.getElementById('volume-label').textContent = data.volume + '%';
+                }
             } catch {
                 document.getElementById('status').textContent = 'Disconnected';
             }
         }
 
-        document.getElementById('btn-play').addEventListener('click', async () => {
-            const status = document.getElementById('status').textContent;
-            await post(status === 'Playing' ? 'pause' : 'play');
-            refresh();
-        });
+        // ── Queue ─────────────────────────────────────────────────
+        async function refreshQueue() {
+            try {
+                const res = await fetch(`${API}/queue`, { headers: authHeaders() });
+                const queue = await res.json();
+                const list = document.getElementById('queue-list');
 
-        document.getElementById('btn-prev').addEventListener('click', async () => {
-            await post('previous');
-            refresh();
-        });
+                if (queue.length === 0) {
+                    list.innerHTML = '<div style="color:#aaa;font-size:0.8rem;">No songs queued</div>';
+                    return;
+                }
 
-        document.getElementById('btn-next').addEventListener('click', async () => {
-            await post('next');
-            refresh();
-        });
+                list.innerHTML = queue.map((t, i) => `
+                <div class="queue-item">
+                    <div>
+                        <span>${t.displayName}</span><br>
+                        <span class="uploader">by ${t.uploadedBy}</span>
+                    </div>
+                    ${isHost ? `<button onclick="removeFromQueue(${i})" 
+                        style="width:28px;height:28px;font-size:0.7rem;background:#e74c3c;">✕</button>` : ''}
+                </div>
+            `).join('');
+            } catch { }
+        }
 
-        document.getElementById('volume-slider').addEventListener('change', async (e) => {
-            await fetch(`${API}/volume`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-API-Key': API_KEY },
-                body: e.target.value
+        async function removeFromQueue(index) {
+            await fetch(`${API}/queue/${index}`, {
+                method: 'DELETE',
+                headers: authHeaders()
             });
-        });
+            refreshQueue();
+        }
 
-        // Auto-refresh every second
-        refresh();
-        setInterval(refresh, 1000);
+        // ── Upload ────────────────────────────────────────────────
+        async function uploadFile(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const status = document.getElementById('upload-status');
+            status.textContent = 'Uploading...';
+            status.style.color = '#aaa';
+
+            const form = new FormData();
+            form.append('file', file);
+
+            try {
+                const res = await fetch(`${API}/upload`, {
+                    method: 'POST',
+                    headers: authHeaders(),
+                    body: form
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    status.textContent = `✓ ${data.track} added`;
+                    status.style.color = '#1db954';
+                    refreshQueue();
+                } else {
+                    status.textContent = `✕ ${data.error}`;
+                    status.style.color = '#e74c3c';
+                }
+            } catch {
+                status.textContent = '✕ Upload failed';
+                status.style.color = '#e74c3c';
+            }
+
+            // Reset file input so the same file can be uploaded again
+            e.target.value = '';
+        }
+
+        // ── Helpers ───────────────────────────────────────────────
+        function fmt(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+            return `${m}:${s}`;
+        }
     </script>
 </body>
 
