@@ -198,3 +198,9 @@ MusicPlayer/
 | FLAC | `.flac` |
 | AAC | `.aac` |
 | OGG | `.ogg` |
+
+---
+
+## Contributing
+
+Contributions are welcome. See the [project wiki](https://github.com/Zeroscapez/SingWithFriends/wiki/Contributing) for guidelines on branching, code conventions, testing, and opening pull requests.
